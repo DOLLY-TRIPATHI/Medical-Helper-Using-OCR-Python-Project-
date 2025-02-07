@@ -1,0 +1,92 @@
+import pytesseract
+from PIL import Image
+import sched
+import time
+from playsound import playsound
+count=0
+
+# -----------------------------PROVIDING DISEASE STATUS---------------------------------------
+
+# Providing patient data
+def add_patient_data(patient_data, patient_id, data):
+    patient_data[patient_id] = data
+
+#Providing Disease status
+def make_decision(patient_data, patient_id):
+    data = patient_data.get(patient_id)
+    if not data:
+        return "Patient data not found."
+
+    # Example decision rules (replace with actual clinical rules)
+    if data['age'] > 60:
+        return "High risk for cardiovascular disease."
+    elif data['temperature'] > 38.0:
+        return "Fever detected. Possible infection."
+    else:
+        return "No significant issues detected."
+
+# Example usage:
+patient_data = {}
+
+# Take input for patient data
+patient_id = int(input("Enter patient ID: "))
+age = int(input("Enter patient age: "))
+temperature = float(input("Enter patient temperature: "))
+heart_rate = int(input("Enter patient heart rate: "))
+
+# Add patient data
+add_patient_data(patient_data, patient_id, {'age': age, 'temperature': temperature, 'heart_rate': heart_rate})
+
+# Make decision for the patient
+decision_patient = make_decision(patient_data, patient_id)
+
+#-----------------------------------MEDICAL HELPER  USING OCR-------------------------------
+
+# print("Decision for Patient:", decision_patient)
+def ocr_medical_text(image_path):
+    # Open the image file
+    with Image.open("Photo from Dolly Tripathi - Copy.jpg") as img:
+        # Use pytesseract to do OCR on the image
+        text = pytesseract.image_to_string(img)
+        return text
+
+# Playing remainder sound   
+def play_reminder_sound():
+    # Play a sound when the reminder occurs
+    playsound(r"Document from Dolly Tripathi.wav1")  
+
+# Initialize the scheduler
+scheduler = sched.scheduler(time.time, time.sleep) 
+# count=0
+# Reminder Logic
+def remind_extracted_text(image_path):
+    global count
+    count=count+1
+    # Your reminder logic here
+    # extracted_text = ocr_medical_text(image_path)
+    print("Reminder: Don't forget to take your medicine timely!")
+    play_reminder_sound()
+    # print(extracted_text)
+    # Reschedule the reminder after 10 seconds
+    if(count<=2):
+      scheduler.enter(10, 1, remind_extracted_text, argument=(image_path,))
+    else:
+        print("Reminder Worked Successfully")
+
+
+def main():
+    image_path = "Photo from Dolly Tripathi - Copy.jpg"  # Path to your medical document image
+    print("Decision for Patient:", decision_patient)
+
+    extracted_text = ocr_medical_text(image_path)
+    print(extracted_text)
+    # Schedule reminder after 10 seconds (adjust as needed)
+    scheduler.enter(10, 1, remind_extracted_text, argument=(image_path,))
+    # Start the scheduler
+    scheduler.run()
+
+if __name__ == "__main__":
+
+    main()
+
+
